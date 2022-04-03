@@ -34,7 +34,7 @@ class Task {
 
   startTimer() {
     let timer = this.updateProgress.bind(this)
-    // setInterval(timer, 100)
+    // setInterval(timer, 100);
   }
 
   finishedTask() {
@@ -51,10 +51,10 @@ class Task {
 }
 
 class MathTask extends Task {
-  constructor(instructions) {
-    super(instructions)
+  constructor() {
+    super("")
     this.generateNums();
-    this.additionalDom();
+    this.answersDom();
   }
 
   generateNums() {
@@ -65,7 +65,7 @@ class MathTask extends Task {
     this.updateInstructionsDom();
   }
 
-  additionalDom() {
+  answersDom() {
     let previousAnswers = this.dom.querySelector("div")
     if (previousAnswers != null) {
       previousAnswers.remove();
@@ -97,9 +97,67 @@ class MathTask extends Task {
   finishedTask() {
     super.finishedTask();
     this.generateNums();
-    this.additionalDom();
+    this.answersDom();
+  }
+}
+
+async function loadSentences() {
+  let file = await fetch("./sentences.txt");
+  let text = await file.text();
+  let sentences = text.split("\r\n");
+  return sentences;
+}
+
+class TextTask extends Task {
+  constructor(sentences) {
+    super("Please copy the text into the box below:");
+    this.sentenceOptions = sentences;
+    this.generateSentence();
+    this.answerDom();
+  }
+
+  generateSentence() {
+    let previousSentence = this.dom.querySelector("p.sentence");
+    if (previousSentence != null) {
+      previousSentence.remove();
+    }
+
+    this.sentence = this.sentenceOptions[Math.floor(Math.random() * this.sentenceOptions.length)].toLowerCase();
+    let sentenceDom = document.createElement("p");
+    sentenceDom.innerText = this.sentence;
+    sentenceDom.classList.add("sentence");
+    this.progressDom.insertAdjacentElement("beforebegin", sentenceDom);
+  }
+
+  answerDom() {
+    let previousBox = this.dom.querySelector("input");
+    if (previousBox != null) {
+      previousBox.remove();
+    }
+
+    this.textBox = document.createElement("input")
+    this.textBox.setAttribute("type", "text");
+    let func = this.checkAnswer.bind(this);
+    this.textBox.onkeyup = func;
+    this.progressDom.insertAdjacentElement("beforebegin", this.textBox);
+  }
+
+  checkAnswer() {
+    if (this.sentence == this.textBox.value) {
+      this.finishedTask();
+    }
+  }
+
+  finishedTask() {
+    super.finishedTask();
+    this.generateSentence();
+    this.answerDom();
   }
 }
 
 // let a = new Task();
-let b = new MathTask("");
+window.onload = async () => {
+  let sentences = await loadSentences();
+  let b = new MathTask();
+  let c = new TextTask(sentences);
+}
