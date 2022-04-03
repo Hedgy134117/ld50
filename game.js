@@ -210,10 +210,66 @@ class OrderTask extends Task {
   }
 }
 
+class ClickTask extends Task {
+  constructor() {
+    super("")
+    this.current = 0;
+    this.currentDom = null;
+    this.max = Math.floor(1 + Math.random() * 20);
+    this.instructions = `Press this button ${this.max} times`
+    this.updateInstructionsDom();
+
+    this.createClicker();
+  }
+
+  createClicker() {
+    let previousClicker = this.dom.querySelector("div")
+    if (previousClicker != null) {
+      previousClicker.remove();
+    }
+
+    let clickerContainer = document.createElement("div");
+    this.progressDom.insertAdjacentElement("beforebegin", clickerContainer);
+
+    let clicker = document.createElement("button");
+    clicker.innerText = "click me :)"
+    let func = this.click.bind(this);
+    clicker.onclick = func;
+    clickerContainer.append(clicker);
+
+    this.currentDom = document.createElement("span");
+    this.updateCurrentDom();
+    clickerContainer.append(this.currentDom);
+  }
+
+  click() {
+    this.current++;
+    this.updateCurrentDom();
+
+    if (this.current == this.max) {
+      this.finishedTask();
+    }
+  }
+
+  updateCurrentDom() {
+    this.currentDom.innerText = `${this.current} / ${this.max}`;
+  }
+
+  finishedTask() {
+    super.finishedTask();
+    this.current = 0;
+    this.max = Math.floor(1 + Math.random() * 20);
+    this.instructions = `Press this button ${this.max} times`
+    this.updateInstructionsDom();
+    this.createClicker();
+  }
+}
+
 // let a = new Task();
 window.onload = async () => {
   let sentences = await loadSentences();
   let b = new MathTask();
   let c = new TextTask(sentences);
   let d = new OrderTask();
+  let e = new ClickTask();
 }
