@@ -155,9 +155,65 @@ class TextTask extends Task {
   }
 }
 
+class OrderTask extends Task {
+  constructor() {
+    super("Select the numbers in ASCENDING order");
+    this.current = 0;
+    this.max = 5;
+    this.answerDom();
+  }
+
+  answerDom() {
+    let previousAnswers = this.dom.querySelector("div")
+    if (previousAnswers != null) {
+      previousAnswers.remove();
+    }
+
+    let answersContainer = document.createElement("div");
+    this.progressDom.insertAdjacentElement("beforebegin", answersContainer);
+
+    let answers = [];
+    for (let i = 0; i < this.max; i++) {
+      answers.push(i + 1);
+    }
+
+    for (let i = 0; i < this.max; i++) {
+      let answerDom = document.createElement("button");
+      let index = Math.floor(Math.random() * answers.length)
+      let answer = answers[index];
+      answers.splice(index, 1);
+
+      let func = this.selectAnswer.bind(this, answer);
+      answerDom.onclick = func;
+      answerDom.innerText = answer;
+      answersContainer.append(answerDom);
+    }
+  }
+
+  selectAnswer(num) {
+    if (num == this.current + 1) {
+      this.current = num;
+    }
+    else {
+      this.penaltyTask();
+    }
+
+    if (this.current == this.max) {
+      this.finishedTask();
+    }
+  }
+
+  finishedTask() {
+    super.finishedTask();
+    this.current = 0;
+    this.answerDom();
+  }
+}
+
 // let a = new Task();
 window.onload = async () => {
   let sentences = await loadSentences();
   let b = new MathTask();
   let c = new TextTask(sentences);
+  let d = new OrderTask();
 }
