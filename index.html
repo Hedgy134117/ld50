@@ -8,6 +8,12 @@
   <title>LD50</title>
 
   <style>
+    body,
+    html {
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       display: flex;
     }
@@ -15,6 +21,7 @@
     section {
       padding: 1em;
       border: 1px solid black;
+      flex-grow: 1;
       display: flex;
       flex-direction: column;
     }
@@ -26,16 +33,6 @@
 </head>
 
 <body>
-  <section>
-    <p>What is 2 + 4?</p>
-    <div>
-      <button>3</button>
-      <button>6</button>
-      <button>8</button>
-      <button>5</button>
-    </div>
-    <progress value="5" max="10"></progress>
-  </section>
   <section>
     <p>Please copy this text into the box below:</p>
     <p>Sphinx of black quartz, judge my vow</p>
@@ -71,6 +68,8 @@
       <option value="">GIRAFFE</option>
     </select>
   </section>
+
+  <script src="game.js"></script>
 </body>
 
 </html>
