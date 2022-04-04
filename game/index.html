@@ -10,6 +10,10 @@
   <!-- Sentences Source: https://www.gutenberg.org/files/18362/18362.txt -->
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body,
     html {
       margin: 0;
@@ -17,34 +21,55 @@
     }
 
     body {
-      display: flex;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      place-items: center;
+    }
+
+    @keyframes fade-in {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
     }
 
     section {
+      width: 100%;
+      height: 100%;
       padding: 1em;
       border: 1px solid black;
       flex-grow: 1;
       display: flex;
       flex-direction: column;
+      animation: fade-in .1s linear;
     }
 
     section progress {
       width: 100%;
     }
+
+    button,
+    input {
+      padding: 1em;
+    }
+
+    #score {
+      align-items: center;
+      justify-content: center;
+    }
   </style>
 </head>
 
 <body>
-  <section>
-    <p>Find DOG</p>
-    <select name="" id="">
-      <option value="x">DOG</option>
-      <option value="">CAT</option>
-      <option value="">ELEPHANT</option>
-      <option value="">GIRAFFE</option>
-    </select>
-  </section>
 
+  <section id="score">
+    <p class="score">LOADING</p>
+    <p class="next">TIME UNTIL NEXT TASK:</p>
+  </section>
   <script src="game.js"></script>
 </body>
 

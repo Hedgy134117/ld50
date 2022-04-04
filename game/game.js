@@ -1,11 +1,18 @@
+function increaseScore(score) {
+  let currentScore = parseInt(window.localStorage.getItem("taskchampion"));
+  window.localStorage.setItem("taskchampion", currentScore + score);
+
+  document.body.querySelector(".score").innerText = `SCORE: ${currentScore}`;
+}
+
 class Task {
-  constructor(instructions) {
+  constructor(instructions, maxTime) {
     this.dom = null;
     this.instructions = instructions;
     this.instructionsDom = null;
     this.progress = 0;
     this.progressDom = null;
-    this.maxTime = 10;
+    this.maxTime = maxTime;
 
     this.constructDom();
     this.startTimer();
@@ -24,21 +31,29 @@ class Task {
 
   updateProgress() {
     this.progress += 0.1
+    increaseScore(1);
+
+    if (this.progress > this.maxTime) {
+      this.endGame();
+    }
+
     this.updateProgressDom();
   }
 
   updateProgressDom() {
     this.progressDom.setAttribute("value", this.progress);
     this.progressDom.setAttribute("max", this.maxTime);
+    this.dom.style.backgroundColor = `rgba(255, 0, 0, ${this.progress / this.maxTime})`
   }
 
   startTimer() {
     let timer = this.updateProgress.bind(this)
-    // setInterval(timer, 100);
+    setInterval(timer, 100);
   }
 
   finishedTask() {
     this.progress = 0;
+    increaseScore(100);
   }
 
   penaltyTask() {
@@ -48,11 +63,15 @@ class Task {
   updateInstructionsDom() {
     this.instructionsDom.innerText = this.instructions;
   }
+
+  endGame() {
+    window.location.href = "../score/";
+  }
 }
 
 class MathTask extends Task {
-  constructor() {
-    super("")
+  constructor(maxTime) {
+    super("", maxTime)
     this.generateNums();
     this.answersDom();
   }
@@ -105,13 +124,14 @@ async function loadSentences() {
   let file = await fetch("./sentences.txt");
   let text = await file.text();
   let sentences = text.split("\r\n");
-  return sentences;
+  TextTask.sentences = sentences;
 }
 
 class TextTask extends Task {
-  constructor(sentences) {
-    super("Please copy the text into the box below:");
-    this.sentenceOptions = sentences;
+  static sentences = null;
+
+  constructor(maxTime) {
+    super("Please copy the text into the box below:", maxTime);
     this.generateSentence();
     this.answerDom();
   }
@@ -122,7 +142,7 @@ class TextTask extends Task {
       previousSentence.remove();
     }
 
-    this.sentence = this.sentenceOptions[Math.floor(Math.random() * this.sentenceOptions.length)].toLowerCase();
+    this.sentence = TextTask.sentences[Math.floor(Math.random() * TextTask.sentences.length)].toLowerCase();
     let sentenceDom = document.createElement("p");
     sentenceDom.innerText = this.sentence;
     sentenceDom.classList.add("sentence");
@@ -156,8 +176,8 @@ class TextTask extends Task {
 }
 
 class OrderTask extends Task {
-  constructor() {
-    super("Select the numbers in ASCENDING order");
+  constructor(maxTime) {
+    super("Select the numbers in ASCENDING order", maxTime);
     this.current = 0;
     this.max = 5;
     this.answerDom();
@@ -211,11 +231,11 @@ class OrderTask extends Task {
 }
 
 class ClickTask extends Task {
-  constructor() {
-    super("")
+  constructor(maxTime) {
+    super("", maxTime)
     this.current = 0;
     this.currentDom = null;
-    this.max = Math.floor(1 + Math.random() * 20);
+    this.max = Math.floor(1 + Math.random() * 10);
     this.instructions = `Press this button ${this.max} times`
     this.updateInstructionsDom();
 
@@ -258,18 +278,52 @@ class ClickTask extends Task {
   finishedTask() {
     super.finishedTask();
     this.current = 0;
-    this.max = Math.floor(1 + Math.random() * 20);
+    this.max = Math.floor(1 + Math.random() * 10);
     this.instructions = `Press this button ${this.max} times`
     this.updateInstructionsDom();
     this.createClicker();
   }
 }
 
-// let a = new Task();
+const timer = ms => new Promise(res => setTimeout(res, ms))
+
+
+let hardMode = new URL(document.location).searchParams.get("hard");
 window.onload = async () => {
-  let sentences = await loadSentences();
-  let b = new MathTask();
-  let c = new TextTask(sentences);
-  let d = new OrderTask();
-  let e = new ClickTask();
+  await loadSentences();
+  window.localStorage.setItem("taskchampion", 0);
+
+  let taskTypes = [MathTask, TextTask, OrderTask, ClickTask];
+  let tasks = [];
+  if (hardMode) {
+    document.body.querySelector(".next").innerText = ``;
+    for (let i = 0; i < 8; i++) {
+      tasks.push(new taskTypes[Math.floor(Math.random() * taskTypes.length)](30));
+    }
+  }
+  else {
+    let taskTypesToDel = [MathTask, TextTask, OrderTask, ClickTask];
+
+    let i = 0;
+    let last = 0;
+    while (i < 8) {
+      document.body.querySelector(".next").innerText = `TIME UNTIL NEXT TASK: ${Math.round(Math.exp(i))} SECONDS`;
+      await timer(Math.exp(i) * 1000)
+
+      if (taskTypesToDel.length > 0) {
+        let index = Math.floor(Math.random() * taskTypesToDel.length)
+        tasks.push(new taskTypesToDel[index](30));
+        taskTypesToDel.splice(index, 1);
+      }
+      else {
+        let index = Math.floor(Math.random() * taskTypes.length)
+        tasks.push(new taskTypes[index](30));
+      }
+
+      i++;
+    }
+  }
+
+
+
 }
