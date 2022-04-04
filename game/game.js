@@ -123,7 +123,7 @@ class MathTask extends Task {
 async function loadSentences() {
   let file = await fetch("./sentences.txt");
   let text = await file.text();
-  let sentences = text.split("\r\n");
+  let sentences = text.split("\n");
   TextTask.sentences = sentences;
 }
 
